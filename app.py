@@ -68,6 +68,27 @@ def provide_algorithm(raw_data_df):
         st.write(prepared_data_df)
     return 
 
+
+def provide_decision_support(home_stats, away_stats):
+    
+    home_scoring_rank = home_stats[home_stats.team == home_team].index[0]
+    home_scoring_mean = home_stats[home_stats["team"] == home_team]["points_scored"].values[0]
+    first_col.metric(label="Home Scoring Mean", value=home_scoring_mean)
+
+    away_scoring_rank = away_stats[away_stats.team == away_team].index[0]
+    away_scoring_mean = away_stats[away_stats["team"] == away_team]["points_scored"].values[0]
+    second_col.metric(label="Away Scoring Mean", value=away_scoring_mean)
+
+    home_allowed_rank = home_stats[home_stats.team == home_team].index[0]
+    home_allowed_mean = home_stats[home_stats["team"] == home_team]["points_allowed"].values[0]
+    first_col.metric(label="Home Allowed Mean", value=home_allowed_mean)
+
+    away_allowed_rank = away_stats[away_stats.team == away_team].index[0]
+    away_allowed_mean = away_stats[away_stats["team"] == away_team]["points_allowed"].values[0]
+    second_col.metric(label="Away Allowed Mean", value=away_allowed_mean)
+
+    return home_scoring_mean, home_allowed_mean, away_scoring_mean, away_allowed_mean
+
 def main():
 
     st.title("NFL-Predictor")
@@ -83,7 +104,9 @@ def main():
     # Level 3
     provide_algorithm(raw_data_df=raw_data_df)
 
-
+    # Level 4
+    home_scoring_mean, home_allowed_mean, away_scoring_mean, away_allowed_mean = provide_decision_support(home_stats, away_stats)
+    
     return 
 
 if __name__ == "__main__":
