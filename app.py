@@ -2,12 +2,14 @@ import json
 import streamlit as st
 import pandas as pd
 
-def provide_raw_data(data: dict) -> None:
-
-    with st.expander(label="Raw Data"):
-        st.json(data)
+def provide_raw_data():
+    with open(file="data/nfl_data.json", mode="r") as raw_file:
+        raw_data = json.load(raw_file)
     
-    return 
+    with st.expander(label="Raw Data"):
+        st.json(raw_data)
+    
+    return raw_data
 
 
 def provide_derived_data(df: pd.DataFrame) -> None:
