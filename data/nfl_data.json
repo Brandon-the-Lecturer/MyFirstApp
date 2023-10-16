@@ -1,0 +1,52 @@
+{
+    "teams": [
+        "Arizona Cardinals",
+        "Los Angeles Rams",
+        "San Francisco 49ers",
+        "Seattle Seahawks"
+    ],
+    "games": [
+        {
+            "team": "Arizona Cardinals",
+            "opponent": "Los Angeles Rams",
+            "points_scored": 28,
+            "points_allowed": 21
+        },
+        {
+            "team": "Los Angeles Rams",
+            "opponent": "Arizona Cardinals",
+            "points_scored": 21,
+            "points_allowed": 28
+        },
+        {
+            "team": "Arizona Cardinals",
+            "opponent": "San Francisco 49ers",
+            "points_scored": 35,
+            "points_allowed": 14
+        },
+        {
+            "team": "San Francisco 49ers",
+            "opponent": "Arizona Cardinals",
+            "points_scored": 14,
+            "points_allowed": 35
+        },
+        {
+            "team": "Los Angeles Rams",
+            "opponent": "San Francisco 49ers",
+            "points_scored": 24,
+            "points_allowed": 28
+        },
+        {
+            "team": "San Francisco 49ers",
+            "opponent": "Los Angeles Rams",
+            "points_scored": 28,
+            "points_allowed": 26
+        },
+        {
+            "team": "Seattle Seahawks",
+            "opponent": "Arizona Cardinals",
+            "points_scored": 17,
+            "points_allowed": 31
+        }
+    ]
+}
