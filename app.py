@@ -2,46 +2,51 @@ import json
 import streamlit as st
 import pandas as pd
 
+
 def provide_raw_data(path):
     with open(file=path, mode="r") as raw_file:
         raw_data = json.load(raw_file)
-    
+
     raw_data_df = pd.DataFrame(raw_data["games"])
 
-    st.selectbox(label="Home Team", options=raw_data["teams"], index=0)
-    st.selectbox(label="Away Team", options=raw_data["teams"], index=1)
-    
+    home_team = st.selectbox(label="Home Team", options=raw_data["teams"], index=0)
+    away_team = st.selectbox(label="Away Team", options=raw_data["teams"], index=1)
+
     with st.expander(label="Raw Data"):
         st.json(raw_data)
-    
-    return raw_data_df
+
+    return raw_data_df, home_team, away_team
 
 
-def provide_derived_data(raw_data):
+def provide_derived_data(raw_data_df):
     with st.expander(label="Insights"):
-
         st.subheader("Home Insights")
-        home_stats = df.groupby("team")[["points_scored", "points_allowed"]].mean()
+        home_stats = raw_data_df.groupby("team")[
+            ["points_scored", "points_allowed"]
+        ].mean()
         home_stats["team"] = home_stats.index
         home_stats.sort_values("points_scored", ascending=False, inplace=True)
         home_stats.reset_index(drop=True, inplace=True)
         home_stats.index += 1
         st.write(home_stats)
-    
+
         st.subheader("Away Insights")
-        away_stats = df.groupby("opponent")[["points_scored", "points_allowed"]].mean()
+        away_stats = raw_data_df.groupby("opponent")[
+            ["points_scored", "points_allowed"]
+        ].mean()
         away_stats["team"] = away_stats.index
         away_stats.sort_values("points_scored", ascending=False, inplace=True)
         away_stats.reset_index(drop=True, inplace=True)
         away_stats.index += 1
         st.write(away_stats)
-    
+
     return home_stats, away_stats
 
 
 def provide_algorithm(raw_data_df):
     with st.expander("Algorithm for Home Advantage"):
-        st.markdown("""
+        st.markdown(
+            """
                     **Heimvorteil sind +3 Punkte im Handicap**  
                     *(Modellierte Annahme)*
                     
@@ -56,43 +61,60 @@ def provide_algorithm(raw_data_df):
                     - **Akademische Studien:** Es gibt einige akademische Studien und wissenschaftliche Arbeiten, die den Heimvorteil im Sport, einschließlich der NFL, untersuchen. Diese Studien nutzen statistische Methoden, um den Heimvorteil zu quantifizieren. Obwohl die Ergebnisse variieren können, zeigen viele dieser Studien einen Heimvorteil von etwa 2,5 bis 3 Punkten pro Spiel.
 
                     - **Erfahrung von Sportanalysten:** Sportexperten und Analysten, die die NFL und andere Sportligen abdecken, bringen ihre Erfahrung und Einsichten in die Schätzung des Heimvorteils ein. Dies kann auf beobachteten Mustern und ihrer Kenntnis der Dynamik von Heim- und Auswärtsspielen basieren.
-                    """)
-        
+                    """
+        )
+
         prepared_data_df = raw_data_df.copy()
 
         condition_1 = raw_data_df["points_scored"] - raw_data_df["points_allowed"] > 3
         condition_2 = raw_data_df["points_scored"] - raw_data_df["points_allowed"] < 0
 
         prepared_data_df["true wins"] = condition_1 | condition_2
-        
+
         st.write(prepared_data_df)
-    return 
+    return
 
 
-def provide_decision_support(home_stats, away_stats):
-    
-    home_scoring_rank = home_stats[home_stats.team == home_team].index[0]
-    home_scoring_mean = home_stats[home_stats["team"] == home_team]["points_scored"].values[0]
-    first_col.metric(label="Home Scoring Mean", value=home_scoring_mean)
+def provide_decision_support(home_stats, away_stats, home_team, away_team):
+    with st.expander("Metrics for Decision"):
+        first_col, second_col = st.columns(2)
+        home_scoring_rank = home_stats[home_stats.team == home_team].index[0]
+        home_scoring_mean = home_stats[home_stats["team"] == home_team][
+            "points_scored"
+        ].values[0]
+        first_col.metric(label="Home Scoring Mean", value=home_scoring_mean)
 
-    away_scoring_rank = away_stats[away_stats.team == away_team].index[0]
-    away_scoring_mean = away_stats[away_stats["team"] == away_team]["points_scored"].values[0]
-    second_col.metric(label="Away Scoring Mean", value=away_scoring_mean)
+        away_scoring_rank = away_stats[away_stats.team == away_team].index[0]
+        away_scoring_mean = away_stats[away_stats["team"] == away_team][
+            "points_scored"
+        ].values[0]
+        second_col.metric(label="Away Scoring Mean", value=away_scoring_mean)
 
-    home_allowed_rank = home_stats[home_stats.team == home_team].index[0]
-    home_allowed_mean = home_stats[home_stats["team"] == home_team]["points_allowed"].values[0]
-    first_col.metric(label="Home Allowed Mean", value=home_allowed_mean)
+        home_allowed_rank = home_stats[home_stats.team == home_team].index[0]
+        home_allowed_mean = home_stats[home_stats["team"] == home_team][
+            "points_allowed"
+        ].values[0]
+        first_col.metric(label="Home Allowed Mean", value=home_allowed_mean)
 
-    away_allowed_rank = away_stats[away_stats.team == away_team].index[0]
-    away_allowed_mean = away_stats[away_stats["team"] == away_team]["points_allowed"].values[0]
-    second_col.metric(label="Away Allowed Mean", value=away_allowed_mean)
+        away_allowed_rank = away_stats[away_stats.team == away_team].index[0]
+        away_allowed_mean = away_stats[away_stats["team"] == away_team][
+            "points_allowed"
+        ].values[0]
+        second_col.metric(label="Away Allowed Mean", value=away_allowed_mean)
 
     return home_scoring_mean, home_allowed_mean, away_scoring_mean, away_allowed_mean
 
 
-def provide_automated_decision(home_scoring_mean, home_allowed_mean, away_scoring_mean, away_allowed_mean):
+def provide_automated_decision(
+    home_scoring_mean,
+    home_allowed_mean,
+    away_scoring_mean,
+    away_allowed_mean,
+    home_team,
+    away_team,
+):
     with st.expander("Prediction"):
-        home_pred = (home_scoring_mean + away_allowed_mean) /2
+        home_pred = (home_scoring_mean + away_allowed_mean) / 2
         away_pred = (away_scoring_mean + home_allowed_mean) / 2
 
         spread_pred = home_pred - away_pred
@@ -103,33 +125,44 @@ def provide_automated_decision(home_scoring_mean, home_allowed_mean, away_scorin
 
         else:
             winner = away_team
-            spread_pred = spread_pred 
+            spread_pred = spread_pred
 
         st.success(f"{winner} wins with a handicap of {spread_pred} points.")
 
-def main():
 
+def main():
     st.title("NFL-Predictor")
 
     path = "data/nfl_data.json"
 
     # Level 1
-    raw_data_df = provide_raw_data(path=path)
+    raw_data_df, home_team, away_team = provide_raw_data(path=path)
 
     # Level 2
-    home_stats, away_stats = provide_derived_data(raw_data=raw_data)
+    home_stats, away_stats = provide_derived_data(raw_data_df=raw_data_df)
 
     # Level 3
     provide_algorithm(raw_data_df=raw_data_df)
 
     # Level 4
-    home_scoring_mean, home_allowed_mean, away_scoring_mean, away_allowed_mean = provide_decision_support(home_stats, away_stats)
+    (
+        home_scoring_mean,
+        home_allowed_mean,
+        away_scoring_mean,
+        away_allowed_mean,
+    ) = provide_decision_support(home_stats, away_stats, home_team, away_team)
 
     # Level 5
-    provide_automated_decision(home_scoring_mean, home_allowed_mean, away_scoring_mean, away_allowed_mean)
-    return 
+    provide_automated_decision(
+        home_scoring_mean,
+        home_allowed_mean,
+        away_scoring_mean,
+        away_allowed_mean,
+        home_team,
+        away_team,
+    )
+    return
+
 
 if __name__ == "__main__":
     main()
-
-
