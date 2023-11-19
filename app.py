@@ -5,6 +5,7 @@ import pandas as pd
 
 URL = "http://127.0.0.1:8000"
 ENDPOINT_DATA = URL + "/data"
+ENDPOINT_TEAMS = URL + "/teams"
 
 
 def provide_raw_data():
@@ -133,6 +134,12 @@ def provide_automated_decision(
 
 def main():
     st.title("NFL-Predictor")
+
+    response = requests.get(url=ENDPOINT_TEAMS)
+    teams = response.json()
+
+    home_team = st.selectbox(label="Home", options=teams, index=0)
+    away_team = st.selectbox(label="Away", options=teams, index=1)
 
     # Level 1
     provide_raw_data()
