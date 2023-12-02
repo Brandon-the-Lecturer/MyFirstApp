@@ -1,3 +1,5 @@
+import json
+
 from bs4 import BeautifulSoup
 from requests import Session, RequestException
 
@@ -8,6 +10,7 @@ BOX_URL = URL + "/boxscores/"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0"
 }
+OUTPUT_FILE = "season_links.json"
 
 
 def request_url(session: Session, url: str, retries: int = 3, timeout: int = 10):
@@ -62,6 +65,12 @@ def transform_to_season_boxscore_links(session: Session, week_links: list) -> di
     return season_boxscore_links
 
 
+def load_to_json_file(path: str, data: dict) -> None:
+    with open(path, "w") as file:
+        json.dump(data, file)
+    return
+
+
 def main():
     http_session = Session()
 
@@ -74,7 +83,7 @@ def main():
         session=http_session, week_links=week_links
     )
 
-    print(season_boxscore_links)
+    load_to_json_file(path=OUTPUT_FILE, data=season_boxscore_links)
 
 
 if __name__ == "__main__":
