@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 from requests import Session, RequestException
 
+from rich import print
+
 URL = "https://www.pro-football-reference.com"
 BOX_URL = URL + "/boxscores/"
 HEADERS = {
@@ -38,14 +40,41 @@ def extract_boxscore_links(soup: BeautifulSoup) -> list:
     return [URL + link["href"] for link in links]
 
 
+def create_week_links(key: str) -> list:
+    season, _, current_week_no = key.split("/")
+    week_links = list()
+
+    for week_no in range(int(current_week_no), 0, -1):
+        week_link = f"{URL}/years/{season}/week_{week_no}.htm"
+        week_links.append(week_link)
+    return week_links
+
+
+def transform_to_season_boxscore_links(session: Session, week_links: list) -> dict:
+    season_boxscore_links = dict()
+
+    for week_link in week_links:
+        week_key = "/".join(week_link.split(".")[2].split("/")[-2:])
+        html = request_url(session=session, url=week_link)
+        soup = parse_html_to_soup(html=html)
+        boxscore_links = extract_boxscore_links(soup=soup)
+        season_boxscore_links[week_key] = boxscore_links
+    return season_boxscore_links
+
+
 def main():
     http_session = Session()
+
     html = request_url(session=http_session, url=BOX_URL)
     soup = parse_html_to_soup(html)
-
     key = extract_current_week_info(soup=soup)
-    boxscore_links = extract_boxscore_links(soup=soup)
-    print(boxscore_links)
+    week_links = create_week_links(key)
+
+    season_boxscore_links = transform_to_season_boxscore_links(
+        session=http_session, week_links=week_links
+    )
+
+    print(season_boxscore_links)
 
 
 if __name__ == "__main__":
