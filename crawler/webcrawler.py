@@ -49,6 +49,7 @@ def create_week_links(key: str) -> list:
 
     for week_no in range(int(current_week_no), 0, -1):
         week_link = f"{URL}/years/{season}/week_{week_no}.htm"
+        print(f"Created: {week_link = }")
         week_links.append(week_link)
     return week_links
 
